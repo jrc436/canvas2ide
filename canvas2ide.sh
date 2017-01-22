@@ -78,7 +78,7 @@ for dir in "$output"/*; do
 			mkdir "$dir/$tmpstr"
 			#using wildcard here since many don't match $zipfile, even with regex
 			if [[ ! -z $check && ! -d "$dir/$check/src/" ]]; then
-				echo "$dir project seems malformatted: Expected: $check project does not exist"
+				echo "$dir project seems malformatted: $check project does not exist"
 			fi
 			mv "$dir"/*/src/* "$dir/$tmpstr" >> mv.log 2>&1
 			#this will find any loose java files. the rest should already be in the src folder
