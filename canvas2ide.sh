@@ -12,8 +12,12 @@ if [ "$#" -lt 2 ]; then
 elif [ "$#" -eq 2 ]; then
 	input="$1"
 	output="$2"
-elif [ "$#" -ge 2 ]; then
-	echo "Arguments beyond second are ignored"
+elif [ "$#" -eq 3 ]; then
+	input="$1"
+	output="$2"
+	check="$3"
+elif [ "$#" -ge 3 ]; then
+	echo "Arguments beyond third are ignored"
 	input="$1"
 	output="$2"
 fi 
@@ -63,13 +67,22 @@ for dir in "$output"/*; do
 	for zipfile in "$dir"/*".zip"; do
 		#can do matching here to a cmd line arg and a regex to ensure correct naming
 		if [ -f "$zipfile" ]; then
+			if [[ ! -z $check && "$check".zip != "${zipfile##*/}" ]]; then
+				#checking for canvas's garbo in particular
+				if [[ ! "${zipfile##*/}" =~ "$check"-[0-9].zip ]]; then
+					echo "$dir zipfile seems malformatted: Expected: $check.zip, Received: ${zipfile##*/}"
+				fi
+			fi
 			unzip -qq "$zipfile" -d "$dir"
 			rm "$zipfile"
 			mkdir "$dir/$tmpstr"
 			#using wildcard here since many don't match $zipfile, even with regex
-			mv "$dir"/*/src/* "$dir/$tmpstr"
+			if [[ ! -z $check && ! -d "$dir/$check/src/" ]]; then
+				echo "$dir project seems malformatted: Expected: $check project does not exist"
+			fi
+			mv "$dir"/*/src/* "$dir/$tmpstr" >> mv.log 2>&1
 			#this will find any loose java files. the rest should already be in the src folder
-			mv "$dir/"*.java "$dir/$tmpstr"
+			mv "$dir/"*.java "$dir/$tmpstr" >> mv.log 2>&1
 		fi
 	done
 	for file in "$dir"/*; do
